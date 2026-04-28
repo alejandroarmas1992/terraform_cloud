@@ -1,0 +1,61 @@
+trigger: none   #SOLO ejecución manual
+pr: none
+
+parameters:
+  - name: environment
+    displayName: Entorno a destruir
+    type: string
+    default: dev
+    values: [dev, qa, prod]
+
+variables:
+  TF_WORKING_DIR: './terraform/'
+  AZURE_SERVICE_CONNECTION: 'azure-dev-tcs'
+  SUBSCRIPTION_ID: '2582c624-5631-45e8-848b-8f4b7cdd6490'
+
+resources:
+  containers:
+    - container: dockerterraform
+      image: acrtcsdevopsdev01.azurecr.io/terraform-azcli:latest
+      endpoint: 'srv-conn-iac-docker_1'
+      options: '--user 0 --entrypoint ""'
+      env:
+        TF_IN_AUTOMATION: 'true'
+
+stages:
+  - stage: DestroyAll
+    displayName: "DESTROY TOTAL (IAM + Infra)"
+    jobs:
+      - job: destroy_all
+        displayName: "Terraform destroy completo"
+        pool:
+          name: Default
+        container: dockerterraform
+        steps:
+          - checkout: self
+            clean: true
+
+          - task: AzureCLI@2
+            displayName: "Terraform destroy ALL"
+            inputs:
+              azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+              scriptType: bash
+              scriptLocation: inlineScript
+              addSpnToEnvironment: true
+              inlineScript: |
+                set -euo pipefail
+
+                echo "Usando suscripción:"
+                az account set --subscription "$(SUBSCRIPTION_ID)"
+                az account show --query id -o tsv
+
+                cd "$(TF_WORKING_DIR)"
+
+                echo "Inicializando Terraform..."
+                terraform init -input=false -reconfigure
+
+                echo "DESTRUCCIÓN TOTAL"
+                terraform destroy \
+                  -auto-approve \
+                  -input=false \
+                  -no-color

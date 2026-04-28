@@ -1,0 +1,167 @@
+terraform import azurerm_resource_group.rg /subscriptions/2582c624-5631-45e8-848b-8f4b7cdd6490/resourceGroups/rg-demo-aks-e02-dev
+terraform state rm azurerm_resource_group.mi_grupo
+--
+az ad user show --id jonathan.armas@tcs-ecu.com --query id -o tsv
+
+
+revisar el ingress
+
+entrar al azure portal correr el powershell
+*****ver la cuenta*****
+az account show
+az account set --subscription iddelasuscripcion
+
+*****obtener credenciales del ingress*****
+az aks get-credentials \
+  --resource-group rg-demo-aks-e02-dev \
+  --name demo-aks-e02-dev \
+  --overwrite-existing
+
+*****ver el servicio del ingress*****
+kubectl get svc -n ingress-nginx
+
+*****ver los pods*****
+kubectl get pods -n ingress-nginx
+
+
+**********Subir la imagen al ACR**********
+---------------------------------------------------------------------------
+az acr login --name demoacre02dev
+docker pull alejo1992/cloud-api:latest
+docker tag alejo1992/cloud-api:latest acre02.azurecr.io/cloud-api:latest
+docker push acre02.azurecr.io/cloud-api:latest
+az acr repository list --name acre02 --output table
+
+Para subir al acr sin docker
+az acr login -n demoacre02dev --expose-token
+
+docker login demoacre02dev.azurecr.io \
+  -u 00000000-0000-0000-0000-000000000000 \
+  -p eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkxHSEY6Q0NLNDpDVVRaOlQzWUc6UFc2Mjo1UEFaOjJST086TjNZVTpOUUVaOkdXWDU6VDRZUjpVR0JXIn0.eyJqdGkiOiI1ZDNkODc1MS1kNDcyLTQ4ODgtYmNmZC1iZjBkMjRhNWIyY2EiLCJzdWIiOiJqb25hdGhhbi5hcm1hc0B0Y3MtZWN1LmNvbSIsIm5iZiI6MTc3NTYwNDU3MSwiZXhwIjoxNzc1NjE2MjcxLCJpYXQiOjE3NzU2MDQ1NzEsImlzcyI6IkF6dXJlIENvbnRhaW5lciBSZWdpc3RyeSIsImF1ZCI6ImRlbW9hY3JlMDJkZXYuYXp1cmVjci5pbyIsInZlcnNpb24iOiIxLjAiLCJyaWQiOiJjMTAyMDAwNjkxNGU0YzQ0YmRjOWNmN2Q2OTVkNjY5ZSIsImdyYW50X3R5cGUiOiJyZWZyZXNoX3Rva2VuIiwiYXBwaWQiOiIwNGIwNzc5NS04ZGRiLTQ2MWEtYmJlZS0wMmY5ZTFiZjdiNDYiLCJ0ZW5hbnQiOiJmYTliODg5My01ODg5LTRlYzAtOWIyYS0zOGYzNDRlYTgwOTAiLCJwZXJtaXNzaW9ucyI6eyJhY3Rpb25zIjpbInJlYWQiLCJ3cml0ZSIsImRlbGV0ZSIsIm1ldGFkYXRhL3JlYWQiLCJtZXRhZGF0YS93cml0ZSIsImRlbGV0ZWQvcmVhZCIsImRlbGV0ZWQvcmVzdG9yZS9hY3Rpb24iXX0sInJvbGVzIjpbXX0.XU8B49hVrbEz-6EHm7stighVh0PEfNBV0yw6AdwRb6otluGNAR2DvRCacWLFI5xAMIkj9c_bEdafI6xo-oXDk-mcWFLaPynnq3bYQ7yKoGCuvO8rsqrjUD4wDobIRETaMcC7bpzy7r1GCSRIvzH1u8PMZSv3bwCXt8vpHWFgnO6c8pjktbB-WMm8yUmXy9cF7YNuvJmJDHT7Z8m8PGp-eScNdNkId9JPn-gY3UQ54oUuOsKZt-gc6UtYARbNWUlYSBygO9lppfyeRV9cqxFxZbPdGb_RCF6Wy-QkxjtqYtK8RTvuTvIUqOVnd3HuiWEig5h8-lX7Cc4mqUgXhieIZw
+
+az acr import \
+  --name demoacre02dev \
+  --source docker.io/alejo1992/cloud-api:latest \
+  --image cloud-api:latest
+
+
+  terraform destroy \
+  -target=azurerm_resource_group.rg \
+  -target=azurerm_kubernetes_cluster.aks \
+  -target=azurerm_container_registry.acr
+--
+
+az version
+kubectl version --client
+az aks install-cli
+az aks get-credentials \
+  --resource-group rg-demo-aks-e02-dev \
+  --name demo-aks-e02-dev \
+  --overwrite-existing
+
+-----manifiestos-----
+kubectl apply -f serviceaccount.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+kubectl apply -f ingress.yaml
+
+kubectl get sa
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+
+kubectl get svc -n ingress-nginx
+
+
+
+curl -X POST http://10.52.1.34/DevOps \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "This is a test",
+    "to": "Juan Perez",
+    "from": "Rita Asturia",
+    "timeToLifeSec": 45
+  }'
+
+  kubectl apply -f serviceaccount.yaml
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
+kubectl apply -f ingress.yaml
+
+kubectl get sa
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+
+kubectl get svc -n ingress-nginx
+
+
+
+curl -X POST http://10.40.10.4/DevOps \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "This is a test",
+    "to": "Juan Perez",
+    "from": "Rita Asturia",
+    "timeToLifeSec": 45
+  }'
+  
+  
+  
+  
+  
+  
+  
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
+
+
+kubectl get pods
+kubectl get svc
+
+kubectl port-forward deployment/devops-api 8080:3000
+
+curl -X POST http://localhost:8080/DevOps \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "This is a test",
+    "to": "Juan Perez",
+    "from": "Rita Asturia",
+    "timeToLifeSec": 45
+  }'
+``
+comando para volver a hacer un pull a la imagen
+kubectl rollout restart deployment devops-api
+
+********acr con login*******
+az acr import \
+  --name demoacre02dev \
+  --source docker.io/alejo1992/cloud-api:latest \
+  --image cloud-api:latest \
+  --username alejo1992 \
+  --password <DOCKERHUB_TOKEN> \
+  --force
+``
+
+
+
+terraform init -reconfigure
+
+terraform import \
+  azurerm_kubernetes_cluster.aks \
+  /subscriptions/2582c624-5631-45e8-848b-8f4b7cdd6490/resourceGroups/rg-demo-aks-e02-dev/providers/Microsoft.ContainerService/managedClusters/demo-aks-e02-dev
+
+  terraform import \
+  azurerm_linux_virtual_machine.vm_test_ingress \
+  /subscriptions/2582c624-5631-45e8-848b-8f4b7cdd6490/resourceGroups/rg-demo-aks-e02-dev/providers/Microsoft.Compute/virtualMachines/vm-test-ingress-e02
+
+  terraform import \
+  azurerm_network_interface.vm_test_ingress_nic \
+  /subscriptions/2582c624-5631-45e8-848b-8f4b7cdd6490/resourceGroups/rg-demo-aks-e02-dev/providers/Microsoft.Network/networkInterfaces/nic-vm-test-ingress-e02
+
+terraform import \
+  azurerm_public_ip.vm_test_ingress_pip \
+  /subscriptions/2582c624-5631-45e8-848b-8f4b7cdd6490/resourceGroups/rg-demo-aks-e02-dev/providers/Microsoft.Network/publicIPAddresses/pip-vm-test-ingress-e02
+
+
+ 
